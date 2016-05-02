@@ -91,6 +91,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				inviteToParty(s, chID, user, mentions)
 			}
+			case strings.EqualFold(command[0], "pleave"):
+				leaveParty(s, chID, user)
+			case strings.EqualFold(command[0], "pdisband"):
+				disbandParty(s, chID, user)
 			case strings.EqualFold(command[0], "test"):
 				testing(user)
       default:

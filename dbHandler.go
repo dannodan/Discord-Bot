@@ -52,3 +52,16 @@ func updateToDatabase(location string, elementID string, arguments map[string]st
     panic(err)
   }
 }
+
+// Delete from Database
+func deleteFromDatabase(location string, elementID string) {
+  // Open Database File
+  db, err := scribble.New("./data", nil)
+  if err != nil {
+    panic(err)
+  }
+  // Write to the Database
+  if err := db.Delete(location, elementID); err != nil {
+    panic(err)
+  }
+}
