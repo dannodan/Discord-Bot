@@ -36,17 +36,17 @@ func verifyUpdateArgs(args string, s *discordgo.Session, chID string, user *disc
 	}
 	switch {
 		case strings.EqualFold(arguments[0],"STR") || strings.EqualFold(arguments[0],"Strength"):
-			updatePlayer(s, chID, user, "Strength", strings.TrimSpace(arguments[1]))
+			allocateStatPoints(s, chID, user, "Strength", strings.TrimSpace(arguments[1]))
 		case strings.EqualFold(arguments[0],"INT") || strings.EqualFold(arguments[0],"Intelligence"):
-			updatePlayer(s, chID, user, "Intelligence", strings.TrimSpace(arguments[1]))
+			allocateStatPoints(s, chID, user, "Intelligence", strings.TrimSpace(arguments[1]))
 		case strings.EqualFold(arguments[0],"DEX") || strings.EqualFold(arguments[0],"Dexterity"):
-			updatePlayer(s, chID, user, "Dexterity", strings.TrimSpace(arguments[1]))
-		case strings.EqualFold(arguments[0],"CHA") || strings.EqualFold(arguments[0],"Charisma"):
-			updatePlayer(s, chID, user, "Charisma", strings.TrimSpace(arguments[1]))
-		case strings.EqualFold(arguments[0],"WIS") || strings.EqualFold(arguments[0],"Wisdom"):
-			updatePlayer(s, chID, user, "Wisdom", strings.TrimSpace(arguments[1]))
-		case strings.EqualFold(arguments[0],"LUK") || strings.EqualFold(arguments[0],"Luck"):
-			updatePlayer(s, chID, user, "Luck", strings.TrimSpace(arguments[1]))
+			allocateStatPoints(s, chID, user, "Dexterity", strings.TrimSpace(arguments[1]))
+		case strings.EqualFold(arguments[0],"VIT") || strings.EqualFold(arguments[0],"Vitality"):
+			allocateStatPoints(s, chID, user, "Vitality", strings.TrimSpace(arguments[1]))
+		case strings.EqualFold(arguments[0],"SPR") || strings.EqualFold(arguments[0],"Spirit"):
+			allocateStatPoints(s, chID, user, "Spirit", strings.TrimSpace(arguments[1]))
+		case strings.EqualFold(arguments[0],"AGI") || strings.EqualFold(arguments[0],"Agility"):
+			allocateStatPoints(s, chID, user, "Agility", strings.TrimSpace(arguments[1]))
 		default:
 			s.ChannelMessageSend(chID, "`Not a valid status`")
 	}
@@ -73,7 +73,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         playerStats(s, chID, user)
 			case strings.EqualFold(command[0],"generate"):
         generatePlayer(s, chID, user)
-			case strings.EqualFold(command[0],"update"):
+			case strings.EqualFold(command[0],"allocate"):
 				if len(command) < 2 {
 					s.ChannelMessageSend(chID, "`You need to have the Stat you wish to update and the number of points to allocate`")
 				} else {

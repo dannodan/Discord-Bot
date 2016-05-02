@@ -13,64 +13,76 @@ type Player struct {
 	Level						string	`json: "level"`
 	Experience			string  `json: "experience"`
 	Next						string	`json: "next"`
+	Health					string	`json: "health"`
+	MaxHealth				string	`json: "maxHealth"`
 	Strength        string	`json: "strength"`
-	Intelligence    string	`json: "stringligence"`
+	Intelligence    string	`json: "intelligence"`
+	Vitality        string	`json: "vitality"`
+	Spirit          string	`json: "spirit"`
 	Dexterity       string	`json: "dexterity"`
-	Charisma        string	`json: "charisma"`
-	Wisdom          string	`json: "wisdom"`
-	Luck            string	`json: "luck"`
+	Agility         string	`json: "agility"`
 	FreePoints			string	`json: "freePoints"`
   Party           string  `json: "party"`
 }
 
-func playerStats(s *discordgo.Session, channelID string, user *discordgo.User) {
-  message := ""
-	player, err := readFromDatabase("players", user.ID)
-  if err != nil {
-    message = "`There isn't a character with this ID, please use $generate first`"
-  } else {
-    message = 	"```Status for:\nName: "+player["Name"].(string)+"\tLvl: "+player["Level"].(string)+
-                " ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nSTR: "+player["Strength"].(string)+
-                "\tCHA: "+player["Charisma"].(string)+"\nINT: "+player["Intelligence"].(string)+
-                "\tWIS: "+player["Wisdom"].(string)+"\nDEX: "+player["Dexterity"].(string)+
-                "\tLUK: "+player["Luck"].(string)+"\nYou have "+player["FreePoints"].(string)+" Stat points```"
-  }
-  s.ChannelMessageSend(channelID, message)
-}
-
 func generatePlayer(s *discordgo.Session, channelID string, user *discordgo.User) {
-  player := Player{user.ID, user.Username, "1", "0", "50", "0", "0" ,"0" ,"0" ,"0" ,"0", "8", ""}
+  player := Player{user.ID, user.Username, "1", "0", "50", "20", "20", "0", "0" ,"0" ,"0" ,"0" ,"0", "8", ""}
 	writeToDatabase("players", player.ID, player)
 	message := 	"```Character Created:\nName: "+player.Name+"\tLvl: "+player.Level+
-							" ("+player.Experience+"/"+player.Next+")\nSTR: "+player.Strength+
-							"\tCHA: "+player.Charisma+"\nINT: "+player.Intelligence+
-							"\tWIS: "+player.Wisdom+"\nDEX: "+player.Dexterity+
-							"\tLUK: "+player.Luck+"\nYou have "+player.FreePoints+" Stat points```"
+							" ("+player.Experience+"/"+player.Next+")\nHP: "+player.Health+
+							" / "+player.MaxHealth+"\nSTR: "+player.Strength+
+							"\tVIT: "+player.Vitality+"\nINT: "+player.Intelligence+
+							"\tSPR: "+player.Spirit+"\nDEX: "+player.Dexterity+
+							"\tAGI: "+player.Agility+"\nYou have "+player.FreePoints+" Stat points```"
 	s.ChannelMessageSend(channelID, message)
 }
 
-func updatePlayer(s *discordgo.Session, channelID string, user *discordgo.User, argument, quantity string) {
-	quantityInt, _ := strconv.Atoi(quantity)
+func playerStats(s *discordgo.Session, channelID string, user *discordgo.User) {
 	player, err := readFromDatabase("players", user.ID)
   if err != nil {
+    s.ChannelMessageSend(channelID, "`There isn't a character with this ID, please use $generate first`")
+		return
+  }
+  message :=	"```Status for:\nName: "+player["Name"].(string)+"\tLvl: "+player["Level"].(string)+
+							" ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nHP: "+player["Health"].(string)+
+							" / "+player["MaxHealth"].(string)+"\nSTR: "+player["Strength"].(string)+
+              "\tVIT: "+player["Vitality"].(string)+"\nINT: "+player["Intelligence"].(string)+
+              "\tSPR: "+player["Spirit"].(string)+"\nDEX: "+player["Dexterity"].(string)+
+              "\tAGI: "+player["Agility"].(string)+"\nYou have "+player["FreePoints"].(string)+" Stat points```"
+
+  s.ChannelMessageSend(channelID, message)
+}
+
+func allocateStatPoints(s *discordgo.Session, channelID string, user *discordgo.User, argument, quantity string) {
+	quantityInt, err := strconv.Atoi(quantity)
+	if err != nil {
+		s.ChannelMessageSend(channelID, "`Invalid value for points, please enter a valid number`")
+		return
+	}
+	player, err := readFromDatabase("players", user.ID)
+	if err != nil {
     s.ChannelMessageSend(channelID, "`There isn't a character with this ID, please use $generate first`")
     return
   }
   freePointInt, err := strconv.Atoi(player["FreePoints"].(string))
-  if quantityInt <= freePointInt {
-    player[argument] = quantity
-    freePointInt = freePointInt - quantityInt
-    player["FreePoints"] = strconv.Itoa(freePointInt)
-  } else {
-    s.ChannelMessageSend(channelID, "`Not enough Stat Points to allocate`")
-    return
-  }
+	if quantityInt > freePointInt {
+		s.ChannelMessageSend(channelID, "`Not enough Stat Points to allocate`")
+		return
+	}
+	playerStatus, err := strconv.Atoi(player[argument].(string))
+	if err != nil {
+		s.ChannelMessageSend(channelID, "`Couldn't allocate points`")
+		return
+	}
+  player[argument] = strconv.Itoa(playerStatus + quantityInt)
+  player["FreePoints"] = strconv.Itoa(freePointInt - quantityInt)
   writeToDatabase("players", player["ID"].(string), player)
   message := 	"```Status for:\nName: "+player["Name"].(string)+"\tLvl: "+player["Level"].(string)+
-              " ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nSTR: "+player["Strength"].(string)+
-              "\tCHA: "+player["Charisma"].(string)+"\nINT: "+player["Intelligence"].(string)+
-              "\tWIS: "+player["Wisdom"].(string)+"\nDEX: "+player["Dexterity"].(string)+
-              "\tLUK: "+player["Luck"].(string)+"\nYou have "+player["FreePoints"].(string)+" Stat points```"
+              " ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nHP: "+player["Health"].(string)+
+							" / "+player["MaxHealth"].(string)+"\nSTR: "+player["Strength"].(string)+
+              "\tVIT: "+player["Vitality"].(string)+"\nINT: "+player["Intelligence"].(string)+
+              "\tSPR: "+player["Spirit"].(string)+"\nDEX: "+player["Dexterity"].(string)+
+              "\tAGI: "+player["Agility"].(string)+"\nYou have "+player["FreePoints"].(string)+" Stat points```"
 
   s.ChannelMessageSend(channelID, message)
 }

@@ -1,15 +1,17 @@
 {
-	"Charisma": "0",
-	"Dexterity": "1",
+	"Agility": "2",
+	"Dexterity": "3",
 	"Experience": "0",
-	"FreePoints": "4",
+	"FreePoints": "0",
+	"Health": "20",
 	"ID": "96050166187958272",
 	"Intelligence": "0",
 	"Level": "1",
-	"Luck": "0",
+	"MaxHealth": "20",
 	"Name": "Dan no Dan",
 	"Next": "50",
-	"Party": "Testing",
-	"Strength": "1",
-	"Wisdom": "0"
+	"Party": "",
+	"Spirit": "0",
+	"Strength": "2",
+	"Vitality": "1"
 }
