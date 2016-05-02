@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-  "strings"
+  	"strings"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -15,7 +15,7 @@ func main() {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
-	
+
 	// Register messageCreate as a callback for the messageCreate events.
 	dg.AddHandler(messageCreate)
 
@@ -53,7 +53,7 @@ func verifyUpdateArgs(args string, s *discordgo.Session, chID string, user *disc
 }
 
 // func verifyPartyInviteArgs(args string, s *discordgo.Session, chID string, user *discordgo.User, mentions []*discordgo.User) {
-	
+
 // }
 
 // This function will be called (due to AddHandler above) every time a new
@@ -65,7 +65,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	content := m.Content
 	mentions := m.Mentions
 	user := m.Author
-  
+
   if strings.HasPrefix(content, "$") {
     command := strings.SplitN(strings.TrimPrefix(content, "$"), " ", 2)
     switch {
@@ -77,7 +77,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if len(command) < 2 {
 					s.ChannelMessageSend(chID, "`You need to have the Stat you wish to update and the number of points to allocate`")
 				} else {
-					verifyUpdateArgs(command[1], s, chID, user)	
+					verifyUpdateArgs(command[1], s, chID, user)
 				}
 			case strings.EqualFold(command[0], "pcreate"):
 			if len(command) < 2 {
@@ -91,8 +91,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				inviteToParty(s, chID, user, mentions)
 			}
+			case strings.EqualFold(command[0], "test"):
+				testing(user)
       default:
         s.ChannelMessageSend(chID, "`Not a valid command`")
     }
-  }	
+  }
 }

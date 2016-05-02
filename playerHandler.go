@@ -1,7 +1,8 @@
 package main
 
 import (
-	"encoding/json"
+  // "fmt"
+	// "encoding/json"
 	"strconv"
 	"github.com/bwmarrin/discordgo"
 )
@@ -19,15 +20,15 @@ type Player struct {
 	Wisdom          string	`json: "wisdom"`
 	Luck            string	`json: "luck"`
 	FreePoints			string	`json: "freePoints"`
+  Party           string  `json: "party"`
 }
 
 func playerStats(s *discordgo.Session, channelID string, user *discordgo.User) {
   message := ""
-	dbread, err := readFromDatabase("players", user.ID)
+	player, err := readFromDatabase("players", user.ID)
   if err != nil {
     message = "`There isn't a character with this ID, please use $generate first`"
   } else {
-    player := dbread.(map[string]interface{})
     message = 	"```Status for:\nName: "+player["Name"].(string)+"\tLvl: "+player["Level"].(string)+
                 " ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nSTR: "+player["Strength"].(string)+
                 "\tCHA: "+player["Charisma"].(string)+"\nINT: "+player["Intelligence"].(string)+
@@ -38,7 +39,7 @@ func playerStats(s *discordgo.Session, channelID string, user *discordgo.User) {
 }
 
 func generatePlayer(s *discordgo.Session, channelID string, user *discordgo.User) {
-  player := Player{user.ID, user.Username, "1", "0", "50", "0", "0" ,"0" ,"0" ,"0" ,"0", "8"}
+  player := Player{user.ID, user.Username, "1", "0", "50", "0", "0" ,"0" ,"0" ,"0" ,"0", "8", ""}
 	writeToDatabase("players", player.ID, player)
 	message := 	"```Character Created:\nName: "+player.Name+"\tLvl: "+player.Level+
 							" ("+player.Experience+"/"+player.Next+")\nSTR: "+player.Strength+
@@ -49,14 +50,12 @@ func generatePlayer(s *discordgo.Session, channelID string, user *discordgo.User
 }
 
 func updatePlayer(s *discordgo.Session, channelID string, user *discordgo.User, argument, quantity string) {
-	updatedPlayer := Player{}
 	quantityInt, _ := strconv.Atoi(quantity)
-	dbread, err := readFromDatabase("players", user.ID)
+	player, err := readFromDatabase("players", user.ID)
   if err != nil {
     s.ChannelMessageSend(channelID, "`There isn't a character with this ID, please use $generate first`")
     return
   }
-  player := dbread.(map[string]interface{})
   freePointInt, err := strconv.Atoi(player["FreePoints"].(string))
   if quantityInt <= freePointInt {
     player[argument] = quantity
@@ -66,14 +65,7 @@ func updatePlayer(s *discordgo.Session, channelID string, user *discordgo.User, 
     s.ChannelMessageSend(channelID, "`Not enough Stat Points to allocate`")
     return
   }
-  aux, err := json.Marshal(player)
-  if err != nil {
-    panic(err)
-  }
-  if err := json.Unmarshal(aux, &updatedPlayer); err != nil {
-    panic(err)
-  }
-  writeToDatabase("players", player["ID"].(string), updatedPlayer)
+  writeToDatabase("players", player["ID"].(string), player)
   message := 	"```Status for:\nName: "+player["Name"].(string)+"\tLvl: "+player["Level"].(string)+
               " ("+player["Experience"].(string)+"/"+player["Next"].(string)+")\nSTR: "+player["Strength"].(string)+
               "\tCHA: "+player["Charisma"].(string)+"\nINT: "+player["Intelligence"].(string)+
@@ -81,4 +73,10 @@ func updatePlayer(s *discordgo.Session, channelID string, user *discordgo.User, 
               "\tLUK: "+player["Luck"].(string)+"\nYou have "+player["FreePoints"].(string)+" Stat points```"
 
   s.ChannelMessageSend(channelID, message)
+}
+
+func testing(user *discordgo.User)  {
+  test := map[string]string{}
+  test["Party"] = "Test"
+  updateToDatabase("players", user.ID, test)
 }
