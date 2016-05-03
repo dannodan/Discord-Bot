@@ -97,6 +97,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				disbandParty(s, chID, user)
 			case strings.EqualFold(command[0], "test"):
 				testing(user)
+			case strings.EqualFold(command[0], "party"):
+				showParty(s, chID, user)
+			case strings.EqualFold(command[0], "commands"):
+				s.ChannelMessageSend(chID, "```$generate\t$stats\t$allocate\t$pcreate\t$party\t$pinvite\t$pleave\t$pdisband\t$commands```")
       default:
         s.ChannelMessageSend(chID, "`Not a valid command`")
     }

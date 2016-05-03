@@ -1,8 +1,9 @@
 package main
 
 import (
-  // "fmt"
+//   "fmt"
   "strings"
+  "math"
   // "encoding/json"
   "github.com/bwmarrin/discordgo"
 )
@@ -10,6 +11,12 @@ import (
 type Party struct {
   ID        string            `json: "id"`
   Members   map[string]bool   `json: "members"`
+}
+
+type MemberList struct {
+  ID        string                  `json: "id"`
+  Leader    bool                    `json: "leader"`
+  Data      map[string]interface{}  `json: "data"`
 }
 
 func createParty(command string, s *discordgo.Session, channelID string, user *discordgo.User) {
@@ -38,6 +45,44 @@ func createParty(command string, s *discordgo.Session, channelID string, user *d
   updated := map[string]string{"Party":party.ID}
   updateToDatabase("players", user.ID, updated)
   s.ChannelMessageSend(channelID, "`"+user.Username+" created the '"+party.ID+"' Party`")
+}
+
+func showParty(s *discordgo.Session, channelID string, user *discordgo.User) {
+  player, err := readFromDatabase("players", user.ID)
+  if err != nil {
+    s.ChannelMessageSend(channelID, "`You haven't created a character, please use $generate first`")
+    return
+  }
+  if player["Party"] == "" {
+    s.ChannelMessageSend(channelID, "`You don't belong to any party`")
+    return
+  }
+  party, err := readFromDatabase("parties", player["Party"].(string))
+  if err != nil {
+    s.ChannelMessageSend(channelID, "`There was an error showing the party`")
+    return
+  }
+  index := 1.0
+  partyMembers := make([]string,0)
+  for key, value := range party["Members"].(map[string]interface{}) {
+    aux, err := readFromDatabase("players", key)
+    if err != nil {
+      panic(err)
+    }
+    if value.(bool) {
+      partyMembers = append([]string{"The Leader is "+aux["Name"].(string)+"\n\nThe members are:\n"}, strings.Join(partyMembers, ""))
+    } else if math.Mod(index, 3.0) == 0 {
+      partyMembers = append(partyMembers, ""+aux["Name"].(string)+"\n")
+      index = index + 1.0
+    } else {
+      partyMembers = append(partyMembers, ""+aux["Name"].(string)+"\t")
+      index = index + 1.0
+    }
+  }
+  partyMembers = append([]string{ "```"+party["ID"].(string)+" Party\n\n" }, strings.Join(partyMembers, ""))
+  partyMembers = append(partyMembers, "```")
+  message := strings.Join(partyMembers, "")
+  s.ChannelMessageSend(channelID, message)
 }
 
 func leaveParty(s *discordgo.Session, channelID string, user *discordgo.User) {
