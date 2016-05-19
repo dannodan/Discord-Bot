@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-  	"strings"
+  "strings"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -101,6 +101,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				showParty(s, chID, user)
 			case strings.EqualFold(command[0], "commands"):
 				s.ChannelMessageSend(chID, "```$generate\t$stats\t$allocate\t$pcreate\t$party\t$pinvite\t$pleave\t$pdisband\t$commands```")
+			case strings.EqualFold(command[0], "battle"):
+				beginBattle(s, chID, user)
       default:
         s.ChannelMessageSend(chID, "`Not a valid command`")
     }

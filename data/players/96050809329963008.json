@@ -1,5 +1,5 @@
 {
-	"Charisma": "0",
+	"Agility": "3",
 	"Dexterity": "0",
 	"Experience": "0",
 	"FreePoints": "8",
@@ -9,7 +9,8 @@
 	"Luck": "0",
 	"Name": "nyok0",
 	"Next": "50",
-	"Party": "",
+	"Party": "Puff",
 	"Strength": "0",
 	"Wisdom": "0"
+
 }

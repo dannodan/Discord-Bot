@@ -1,8 +1,8 @@
 {
-	"Agility": "0",
+	"Agility": "1",
 	"Dexterity": "0",
 	"Experience": "0",
-	"FreePoints": "8",
+	"FreePoints": "6",
 	"Health": "20",
 	"ID": "96050166187958272",
 	"Intelligence": "0",
@@ -12,6 +12,6 @@
 	"Next": "50",
 	"Party": "Puff",
 	"Spirit": "0",
-	"Strength": "0",
+	"Strength": "2",
 	"Vitality": "0"
 }

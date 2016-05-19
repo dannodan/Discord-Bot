@@ -1,1 +1,1 @@
-go build main.go dbHandler.go playerHandler.go partyHandler.go
+go build main.go dbHandler.go playerHandler.go partyHandler.go battleHandler.go
