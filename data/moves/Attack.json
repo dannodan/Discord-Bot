@@ -1,0 +1,6 @@
+{
+  "ID": "Attack",
+  "Damage": "1 + stat + wAtk",
+  "Parameters": ["Strength", "ATK"],
+  "Effect": ""
+}

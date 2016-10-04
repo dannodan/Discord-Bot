@@ -5,6 +5,7 @@ import (
   "github.com/bwmarrin/discordgo"
   "sort"
   "strconv"
+  "math/rand"
 )
 
 type Battle struct {
@@ -26,7 +27,7 @@ func (a BySpeed) Less(i, j int) bool { first, _ := strconv.Atoi(a[i].Speed)
                                        scnd, _ := strconv.Atoi(a[j].Speed)
                                        return first > scnd }
 
-func defineTurnOrder(party map[string]interface{}, enemies map[string]string) ([]Fighter) {
+func defineTurnOrder(party map[string]interface{}, enemies map[string]interface{}) ([]Fighter) {
   turns := make([]Fighter, 0)
   for key := range party {
     player, err := readFromDatabase("players", key)
@@ -50,18 +51,18 @@ func getTurn(s *discordgo.Session, channelID string, user *discordgo.User, curre
   currentTurn := currentBattle.TurnOrder[0]
   currentBattle.TurnOrder = append(currentBattle.TurnOrder[1:], currentBattle.TurnOrder[0])
   currentBattle.Current = currentTurn.ID
+  writeToDatabase("battles", currentBattle.ID, currentBattle)
   player, _ := readFromDatabase("players", currentTurn.ID)
-  s.ChannelMessageSend(channelID, "`It's "+player["Name"].(string)+"'s turn`")
-  if player["Party"] == "" {
-    
+  if player == nil {
+    enemy, _ := readFromDatabase("enemies", currentTurn.ID)
+    s.ChannelMessageSend(channelID, "`It's "+enemy["Name"].(string)+"'s turn`")
+    enemyMove(s, channelID, user, enemy)
   } else {
-    writeToDatabase("battles", player["Party"].(string), currentBattle)
+    s.ChannelMessageSend(channelID, "`It's "+player["Name"].(string)+"'s turn`")
   }
-  fmt.Println(currentBattle.TurnOrder)
 }
 
 func beginBattle(s *discordgo.Session, channelID string, user *discordgo.User)  {
-//   order := make([]Fighter, 0)
   var currentBattle Battle
   player, err := readFromDatabase("players", user.ID)
   if err != nil {
@@ -69,16 +70,28 @@ func beginBattle(s *discordgo.Session, channelID string, user *discordgo.User)  
     return
   }
   if player["Party"] == "" {
-
+    currentBattle.ID = player["ID"].(string)
+    fighterOrder := make(map[string]interface{})
+    fighterOrder[player["ID"].(string)] = ""
+    enemies, _ := readFromDatabase("partyEncounters", strconv.Itoa(rand.Intn(1)))
+    currentBattle.TurnOrder = defineTurnOrder(fighterOrder, enemies)
   } else {
     party, err := readFromDatabase("parties", player["Party"].(string))
     if err != nil {
       s.ChannelMessageSend(channelID, "`Error`")
       return
     }
+    enemies, _ := readFromDatabase("partyEncounters", strconv.Itoa(rand.Intn(1)))
     currentBattle.ID = party["ID"].(string)
-    currentBattle.TurnOrder = defineTurnOrder(party["Members"].(map[string]interface{}), map[string]string{"1":"Monster"})
+    currentBattle.TurnOrder = defineTurnOrder(party["Members"].(map[string]interface{}), enemies)
   }
   getTurn(s, channelID, user, currentBattle)
   return
+}
+
+func enemyMove(s *discordgo.Session, channelID string, user *discordgo.User, enemy map[string]interface{}) {
+  moves := enemy["Moves"].([]interface{})
+  move := moves[rand.Intn(len(moves))].(string)
+  s.ChannelMessageSend(channelID, "`"+enemy["Name"].(string)+" uses "+move+"`")
+  executeMove(s, channelID, user, move, enemy)
 }
